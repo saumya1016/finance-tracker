@@ -1,7 +1,6 @@
 const Transaction = require('../models/Transaction');
 const mongoose = require('mongoose');
 
-
 exports.getTransactions = async (req, res) => {
   const { 
     page = 1, 
@@ -24,24 +23,22 @@ exports.getTransactions = async (req, res) => {
     }
     if (category) query.category = category;
 
- 
     if (startDate || endDate) {
       query.date = {};
       
       if (startDate) {
         const start = new Date(startDate);
-        start.setUTCHours(0, 0, 0, 0); // Start of the day
+        start.setHours(0, 0, 0, 0); 
         query.date.$gte = start;
       }
       
       if (endDate) {
         const end = new Date(endDate);
-        end.setUTCHours(23, 59, 59, 999); // End of the day
+        end.setHours(23, 59, 59, 999); 
         query.date.$lte = end;
       } else if (startDate) {
-        // If only one date is picked, show ONLY that 24-hour window
         const endOfDay = new Date(startDate);
-        endOfDay.setUTCHours(23, 59, 59, 999);
+        endOfDay.setHours(23, 59, 59, 999);
         query.date.$lte = endOfDay;
       }
     }
@@ -58,7 +55,6 @@ exports.getTransactions = async (req, res) => {
     sortOptions[sort] = order === 'desc' ? -1 : 1;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    // Parallel Execution for speed
     const [transactions, totalResults] = await Promise.all([
       Transaction.find(query)
         .sort(sortOptions)
