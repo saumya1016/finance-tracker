@@ -96,10 +96,14 @@ const TransactionForm = ({ onTransactionAdded }) => {
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input 
               type="number" 
+              min="0" 
+              step="0.01" 
               placeholder="0.00" 
               className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              // Prevents typing '-', 'e', and '+' symbols
+              onKeyDown={(e) => ["-", "e", "E", "+"].includes(e.key) && e.preventDefault()}
               required
             />
           </div>

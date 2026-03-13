@@ -120,6 +120,10 @@ exports.addTransaction = async (req, res) => {
       return res.status(400).json({ msg: "Please fill in all fields" });
     }
 
+    if (Number(amount) <= 0) {
+      return res.status(400).json({ msg: "Amount must be a positive number" });
+    }
+
     const newTrans = new Transaction({ 
       user: req.user.id, 
       type: type.toLowerCase(), 
