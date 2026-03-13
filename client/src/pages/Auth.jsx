@@ -29,7 +29,6 @@ const Auth = () => {
     try {
       if (mode === 'login') {
         if (!showOtp) {
-          // STEP 1: Verify Credentials
           const { data } = await api.signIn({ email: formData.email, password: formData.password });
           if (data.requiresOtp) {
             setShowOtp(true); 
@@ -39,18 +38,15 @@ const Auth = () => {
             navigate('/');
           }
         } else {
-          // STEP 2: Verify Login OTP
           const { data } = await api.verifyLoginOtp({ 
             email: formData.email, 
             otp: formData.otp 
           });
-          
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           navigate('/');
         }
       } 
-      // ... signup and forgot password logic remain the same
       else if (mode === 'signup') {
         if (!showOtp) {
           await api.sendOtp({ email: formData.email, type: 'signup' });
@@ -67,9 +63,15 @@ const Auth = () => {
           await api.sendOtp({ email: formData.email, type: 'forgot' });
           setShowOtp(true);
         } else {
-          await api.forgotPassword({ email: formData.email, otp: formData.otp, newPassword: formData.password });
+          await api.forgotPassword({ 
+            email: formData.email, 
+            otp: formData.otp, 
+            newPassword: formData.password 
+          });
+          // Reset states to return to login successfully
           setMode('login');
           setShowOtp(false);
+          setFormData({ email: '', password: '', username: '', otp: '' });
         }
       }
     } catch (err) {
@@ -102,7 +104,7 @@ const Auth = () => {
         
         {showOtp && (
           <button 
-            onClick={() => { setShowOtp(false); setError(''); }}
+            onClick={() => { setShowOtp(false); setError(''); setFormData({...formData, otp: ''}); }}
             className="absolute top-6 left-6 text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest"
           >
             <ChevronLeft size={16} /> Edit Details
@@ -207,7 +209,7 @@ const Auth = () => {
           
           {mode === 'login' && !showOtp && (
             <button 
-              onClick={() => {setMode('forgot'); setShowOtp(false); setError('');}} 
+              onClick={() => {setMode('forgot'); setShowOtp(false); setError(''); setFormData({...formData, otp: ''});}} 
               className="text-slate-400 hover:text-slate-600 transition-colors text-xs font-semibold"
             >
               Forgot Password?
