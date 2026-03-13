@@ -21,7 +21,7 @@ const TransactionList = ({ refreshTrigger }) => {
         page, 
         limit: 5, 
         type: filters.type, 
-        sortBy: filters.sort,
+        sort: filters.sort,
         minAmount: filters.minAmount,
         maxAmount: filters.maxAmount, 
         startDate: filters.startDate,
