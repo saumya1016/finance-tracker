@@ -7,7 +7,8 @@ const sendEmail = async (email, subject, text) => {
 
     const data = {
       // Your verified sender (use the email you signed up to Brevo with)
-      sender: { name: "FinTrack", email: "saumya.singh.3468@gmail.com" }, 
+      // Change this line in your sendEmail.js data object:
+      sender: { name: "FinTrack", email: "rajputsaumya456@gmail.com" },
       to: [{ email: email }],
       subject: subject,
       htmlContent: `
