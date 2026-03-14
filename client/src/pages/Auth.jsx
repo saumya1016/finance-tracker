@@ -9,6 +9,7 @@ const Auth = () => {
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(''); 
+  const [showNewPasswordForm, setShowNewPasswordForm] = useState(false); 
   const [formData, setFormData] = useState({ 
     email: '', 
     password: '', 
@@ -59,17 +60,23 @@ const Auth = () => {
         }
       } 
       else if (mode === 'forgot') {
-        if (!showOtp) {
+        if (!showOtp && !showNewPasswordForm) {
+          // STEP 1: Send OTP
           await api.sendOtp({ email: formData.email, type: 'forgot' });
           setShowOtp(true);
+        } else if (showOtp && !showNewPasswordForm) {
+          // STEP 2: Logic for "Verify OTP" (Checking if API supports separate verification)
+          setShowOtp(false);
+          setShowNewPasswordForm(true);
         } else {
+          // STEP 3: Final Update
           await api.forgotPassword({ 
             email: formData.email, 
             otp: formData.otp, 
             newPassword: formData.password 
           });
-          // Reset states to return to login successfully
           setMode('login');
+          setShowNewPasswordForm(false);
           setShowOtp(false);
           setFormData({ email: '', password: '', username: '', otp: '' });
         }
@@ -83,6 +90,7 @@ const Auth = () => {
 
   const handleToggle = () => {
     setShowOtp(false);
+    setShowNewPasswordForm(false);
     setError('');
     setFormData({ email: '', password: '', username: '', otp: '' });
     setMode(mode === 'login' ? 'signup' : 'login');
@@ -102,24 +110,25 @@ const Auth = () => {
 
       <div className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl shadow-slate-200 w-full max-w-md border border-white relative z-10 transition-all duration-500">
         
-        {showOtp && (
+        {(showOtp || showNewPasswordForm) && (
           <button 
-            onClick={() => { setShowOtp(false); setError(''); setFormData({...formData, otp: ''}); }}
+            onClick={() => { setShowOtp(false); setShowNewPasswordForm(false); setError(''); }}
             className="absolute top-6 left-6 text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest"
           >
-            <ChevronLeft size={16} /> Edit Details
+            <ChevronLeft size={16} /> Back
           </button>
         )}
 
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            {mode === 'login' ? (showOtp ? 'Verify Login' : 'Welcome Back') : mode === 'signup' ? 'Create Account' : 'Reset Password'}
+            {showNewPasswordForm ? 'Set Password' : showOtp ? 'Verify OTP' : mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Flow'}
           </h2>
           <p className="text-slate-500 mt-2 text-sm">
-            {showOtp ? 'Check your email for the code.' : 
+            {showNewPasswordForm ? 'Enter your new secure password.' : 
+             showOtp ? 'Check your email for the code.' : 
              mode === 'login' ? 'Enter your credentials to access your dashboard.' : 
              mode === 'signup' ? 'Join thousands of users tracking their wealth.' : 
-             'Verify your identity to reset your password.'}
+             'Enter your email to receive a reset code.'}
           </p>
         </div>
 
@@ -131,7 +140,8 @@ const Auth = () => {
         )}
 
         <form className="space-y-5" onSubmit={handleSubmit}>
-          {!showOtp && (
+          {/* Email/Initial State */}
+          {!showOtp && !showNewPasswordForm && (
             <>
               {mode === 'signup' && (
                 <div className="relative">
@@ -155,20 +165,23 @@ const Auth = () => {
                 />
               </div>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  name="password" type="password" 
-                  placeholder={mode === 'forgot' ? "New Password" : "Password"}
-                  value={formData.password} onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-slate-700 font-medium" 
-                  required 
-                />
-              </div>
+              {mode !== 'forgot' && (
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input 
+                    name="password" type="password" 
+                    placeholder="Password"
+                    value={formData.password} onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-slate-700 font-medium" 
+                    required 
+                  />
+                </div>
+              )}
             </>
           )}
           
-          {showOtp && (
+          {/* OTP Verification State */}
+          {showOtp && !showNewPasswordForm && (
             <div className="animate-in zoom-in-95 duration-300">
               <div className="relative">
                 <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
@@ -179,7 +192,19 @@ const Auth = () => {
                   required 
                 />
               </div>
-              <p className="text-xs text-blue-600 mt-2 text-center font-bold tracking-tight italic">Check your inbox for the code</p>
+            </div>
+          )}
+
+          {/* New Password Update State */}
+          {showNewPasswordForm && (
+            <div className="relative animate-in slide-in-from-right-4 duration-300">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                name="password" type="password" placeholder="Enter New Password" 
+                value={formData.password} onChange={handleInputChange}
+                className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-slate-700 font-medium" 
+                required 
+              />
             </div>
           )}
           
@@ -189,7 +214,10 @@ const Auth = () => {
           >
             {loading ? <RefreshCcw className="animate-spin" size={20} /> : (
               <>
-                {showOtp ? 'Verify Identity' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Get Started' : 'Update Password'}
+                {showNewPasswordForm ? 'Update Password' : 
+                 showOtp ? 'Verify OTP' : 
+                 mode === 'forgot' ? 'Send Reset OTP' : 
+                 mode === 'login' ? 'Sign In' : 'Get Started'}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </>
             )}
@@ -197,7 +225,7 @@ const Auth = () => {
         </form>
 
         <div className="mt-8 flex flex-col items-center gap-4 text-sm font-medium">
-          {!showOtp && (
+          {!showOtp && !showNewPasswordForm && (
             <button onClick={handleToggle} className="text-slate-500 hover:text-blue-600 transition-colors">
               {mode === 'login' ? (
                 <>New here? <span className="text-blue-600 font-bold underline underline-offset-4">Create account</span></>
@@ -209,7 +237,7 @@ const Auth = () => {
           
           {mode === 'login' && !showOtp && (
             <button 
-              onClick={() => {setMode('forgot'); setShowOtp(false); setError(''); setFormData({...formData, otp: ''});}} 
+              onClick={() => {setMode('forgot'); setShowOtp(false); setShowNewPasswordForm(false); setError('');}} 
               className="text-slate-400 hover:text-slate-600 transition-colors text-xs font-semibold"
             >
               Forgot Password?

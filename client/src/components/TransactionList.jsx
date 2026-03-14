@@ -39,17 +39,17 @@ const TransactionList = ({ refreshTrigger }) => {
   }, [page, filters, refreshTrigger]);
 
   return (
-    <div className="w-full">
-      <div className="p-5 border-b border-slate-50 bg-slate-50/50 space-y-4">
-        <div className="flex items-center gap-2 text-slate-500 mb-2">
-          <Filter size={16} />
-          <span className="text-xs font-bold uppercase tracking-wider">Search & Filters</span>
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      {/* --- FILTER SECTION --- */}
+      <div className="p-4 sm:p-6 border-b border-slate-50 bg-slate-50/50 space-y-4">
+        <div className="flex items-center gap-2 text-slate-500 mb-1">
+          <Filter size={14} className="text-blue-600" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Search & Filters</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          {/* Type Filter */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <select 
-            className="text-xs font-bold bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+            className="text-[11px] sm:text-xs font-bold bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
             value={filters.type}
             onChange={(e) => { setFilters({ ...filters, type: e.target.value }); setPage(1); }}
           >
@@ -58,103 +58,132 @@ const TransactionList = ({ refreshTrigger }) => {
             <option value="expense">Expenses</option>
           </select>
 
-          {/* Min Amount Filter */}
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
             <input 
               type="number"
-              placeholder="Min Amount"
-              className="w-full pl-9 pr-3 py-2.5 text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              placeholder="Min ₹"
+              className="w-full pl-8 pr-2 py-2.5 text-[11px] sm:text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               value={filters.minAmount}
               onChange={(e) => { setFilters({ ...filters, minAmount: e.target.value }); setPage(1); }}
             />
           </div>
 
-          {/* Start Date Filter */}
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
             <input 
               type="date"
-              className="w-full pl-9 pr-3 py-2.5 text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              className="w-full pl-8 pr-2 py-2.5 text-[11px] sm:text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-600 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               value={filters.startDate}
               onChange={(e) => { setFilters({ ...filters, startDate: e.target.value }); setPage(1); }}
             />
           </div>
 
-          {/* Sort Button */}
           <button 
             onClick={() => {
               setFilters({ ...filters, sort: filters.sort === 'date' ? 'amount' : 'date' });
               setPage(1);
             }}
-            className="w-full text-xs font-bold bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-100 transition-all shadow-sm active:scale-95"
+            className="text-[11px] sm:text-xs font-bold bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-100 transition-all shadow-sm active:scale-95"
           >
-            <ArrowUpDown size={14} className="text-blue-500" /> 
-            By {filters.sort === 'date' ? 'Amount' : 'Date'}
+            <ArrowUpDown size={14} className="text-blue-500 shrink-0" /> 
+            <span className="truncate">By {filters.sort === 'date' ? 'Amount' : 'Date'}</span>
           </button>
         </div>
       </div>
 
-      {/* --- TABLE AREA --- */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100">
-              <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Details</th>
-              <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Category</th>
-              <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {transactions.length > 0 ? (
-              transactions.map((t) => (
-                <tr key={t._id} className="hover:bg-blue-50/30 transition-colors group">
-                  <td className="p-5">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-700 group-hover:text-blue-700 transition-colors">{t.description}</span>
-                      <span className="text-[10px] text-slate-400 font-medium italic">
-                        {new Date(t.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+      {/* --- CONTENT AREA --- */}
+      <div className="w-full">
+        {/* DESKTOP TABLE VIEW (Hidden on Mobile) */}
+        <div className="hidden sm:block">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Details</th>
+                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Category</th>
+                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {transactions.length > 0 ? (
+                transactions.map((t) => (
+                  <tr key={t._id} className="hover:bg-blue-50/30 transition-colors group">
+                    <td className="p-5">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-700 group-hover:text-blue-700 transition-colors">{t.description}</span>
+                        <span className="text-[10px] text-slate-400 font-medium italic">
+                          {new Date(t.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-5">
+                      <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full uppercase tracking-tight">
+                        {t.category || 'General'}
                       </span>
-                    </div>
-                  </td>
-                  <td className="p-5">
-                    <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full uppercase tracking-tight">
+                    </td>
+                    <td className="p-5 text-right">
+                      <span className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {t.type === 'income' ? '+' : '-'}₹{t.amount.toLocaleString()}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+
+        {/* MOBILE CARD VIEW (Visible only on Mobile) */}
+        <div className="sm:hidden divide-y divide-slate-100">
+          {transactions.length > 0 ? (
+            transactions.map((t) => (
+              <div key={t._id} className="p-4 flex justify-between items-center active:bg-slate-50">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm font-bold text-slate-800 leading-tight">{t.description}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 font-black rounded uppercase tracking-wider">
                       {t.category || 'General'}
                     </span>
-                  </td>
-                  <td className="p-5 text-right">
-                    <span className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()}
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {new Date(t.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                     </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" className="p-20 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <History size={48} className="text-slate-200" />
-                    <p className="text-slate-400 font-bold text-sm">No transactions match your filters</p>
-                    <button 
-                      onClick={() => {
-                        setFilters({ type: '', sort: 'date', minAmount: '', maxAmount: '', startDate: '', endDate: '' });
-                        setPage(1); 
-                      }}
-                      className="text-blue-600 text-xs font-bold underline"
-                    >
-                      Clear all filters
-                    </button>
                   </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </div>
+                <div className="text-right">
+                  <span className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {t.type === 'income' ? '+' : '-'}₹{t.amount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : null}
+        </div>
+
+        {/* EMPTY STATE */}
+        {transactions.length === 0 && (
+          <div className="p-16 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="p-4 bg-slate-50 rounded-full text-slate-200">
+                <History size={40} />
+              </div>
+              <p className="text-slate-400 font-bold text-sm">No transactions match your filters</p>
+              <button 
+                onClick={() => {
+                  setFilters({ type: '', sort: 'date', minAmount: '', maxAmount: '', startDate: '', endDate: '' });
+                  setPage(1); 
+                }}
+                className="text-blue-600 text-xs font-black uppercase tracking-widest hover:text-blue-700 underline underline-offset-4"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* --- PAGINATION --- */}
-      <div className="p-5 border-t border-slate-50 flex justify-between items-center bg-slate-50/30">
-        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+      <div className="p-4 sm:p-5 border-t border-slate-50 flex justify-between items-center bg-slate-50/30">
+        <div className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest">
           Page <span className="text-blue-600">{page}</span> of {totalPages}
         </div>
         
@@ -162,14 +191,14 @@ const TransactionList = ({ refreshTrigger }) => {
           <button 
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
-            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm active:scale-90"
           >
             <ChevronLeft size={18} />
           </button>
           <button 
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
-            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm active:scale-90"
           >
             <ChevronRight size={18} />
           </button>
