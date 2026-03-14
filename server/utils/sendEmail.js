@@ -1,18 +1,16 @@
-const { Resend } = require('resend');
-
-// Initialize Resend with your API Key from Render
-const resend = new Resend(process.env.RESEND_API_KEY);
+const axios = require('axios');
 
 const sendEmail = async (email, subject, text) => {
   try {
-    // Extract the OTP from the text string (e.g., "Your code is: 123456")
+    // Extract the OTP from the text string
     const otpCode = text.split(': ')[1] || text;
 
-    const data = await resend.emails.send({
-      from: 'FinTrack <onboarding@resend.dev>', // Must stay as onboarding@resend.dev for Free Tier
-      to: email, // Reminder: Must be your signed-up email for Resend Free Tier
+    const data = {
+      // Your verified sender (use the email you signed up to Brevo with)
+      sender: { name: "FinTrack", email: "saumya.singh.3468@gmail.com" }, 
+      to: [{ email: email }],
       subject: subject,
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
           <h2 style="color: #2563eb; text-align: center;">FinTrack Verification</h2>
           <p>Hello,</p>
@@ -25,12 +23,20 @@ const sendEmail = async (email, subject, text) => {
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">If you did not request this, please ignore this email.</p>
         </div>
       `,
+    };
+
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json'
+      }
     });
 
-    console.log("✅ Email sent successfully via Resend. ID:", data.id);
-    return data;
+    console.log("✅ Email sent successfully via Brevo!");
+    return response.data;
   } catch (error) {
-    console.error("❌ Resend failed to send email:", error);
+    // Better error logging to see exactly why Brevo might fail
+    console.error("❌ Brevo failed to send email:", error.response ? error.response.data : error.message);
     throw new Error("Email service failed");
   }
 };
