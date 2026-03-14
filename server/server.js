@@ -16,15 +16,13 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-// Use the CORS middleware globally
+// This handles BOTH the actual requests and the OPTIONS (preflight) requests.
+// By removing the app.options('*') line, we stop the Node v22 PathError crash.
 app.use(cors(corsOptions));
-
-app.options('*', cors(corsOptions)); 
 
 app.use(express.json());
 
 // 2. ROUTES
-// Important: Ensure  frontend adds /api to the base URL
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/transactions', require('./routes/transRoutes'));
 
@@ -32,7 +30,6 @@ app.use('/api/transactions', require('./routes/transRoutes'));
 app.get('/', (req, res) => res.send('Finance Tracker API is Running...'));
 
 // 4. PORT CONFIGURATION
-// Render automatically provides a PORT environment variable
 const PORT = process.env.PORT || 10000; 
 
 app.listen(PORT, () => {
